@@ -158,7 +158,10 @@ class MatchController extends Controller
                         ->take(50) 
                         ->get();
 
-        return response()->json($matches, 200, [], JSON_UNESCAPED_UNICODE);
+        return response()->json([
+            'server_time' => now('UTC')->toDateTimeString(),
+            'matches' => $matches
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
     // Obtener partidos destacados (Próximos o En Vivo de TODAS las ligas)
     public function getUpcoming()
