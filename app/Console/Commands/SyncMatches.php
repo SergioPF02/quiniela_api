@@ -23,7 +23,7 @@ class SyncMatches extends Command
             return;
         }
 
-        $activeLeagues = League::where('active', true)->whereNotNull('api_id')->get();
+        $activeLeagues = League::where('active', '=', true)->whereNotNull('api_id')->get();
 
         if ($activeLeagues->isEmpty()) {
             $this->warn("⚠️ No hay ligas activas configuradas.");
@@ -44,8 +44,8 @@ class SyncMatches extends Command
         $this->line("📡 Descargando: {$league->name}...");
 
         $response = Http::withoutVerifying()->withHeaders([
-            'x-rapidapi-host' => 'v3.football.api-sports.io',
-            'x-rapidapi-key' => $apiKey
+            'x-rapidapi-key' => $apiKey,
+            'x-apisports-key' => $apiKey
         ])->get('https://v3.football.api-sports.io/fixtures', [
             'league' => $league->api_id,
             'season' => $league->current_season

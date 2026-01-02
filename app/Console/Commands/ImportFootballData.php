@@ -148,7 +148,7 @@ class ImportFootballData extends Command
                 }
 
                 MatchGame::updateOrCreate(
-                    ['api_id' => $matchData['id']],
+                    ['api_id' => (string) $matchData['id']],
                     [
                         'league_id' => $league->id,
                         'quiniela_id' => $quiniela->id, // Link to the Auto-Quiniela
