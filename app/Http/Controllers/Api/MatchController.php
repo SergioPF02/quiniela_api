@@ -36,11 +36,13 @@ class MatchController extends Controller
         $userId = auth()->id();
         $submittedMatchIds = collect($validated['predictions'])->pluck('match_id')->toArray();
 
-        // 1. Validación de Tiempo (En bloque)
+        // 1. Validación de Tiempo (En bloque) - Usamos UTC para consistencia absoluta
+        $nowUtc = now('UTC');
+        
         $startedMatches = MatchGame::whereIn('id', $submittedMatchIds)
-            ->where(function($query) {
+            ->where(function($query) use ($nowUtc) {
                 $query->where('status', '!=', 'scheduled')
-                      ->orWhere('start_time', '<=', now());
+                      ->orWhere('start_time', '<=', $nowUtc);
             })->exists();
         
         if ($startedMatches) {
@@ -110,13 +112,16 @@ class MatchController extends Controller
         // - El partido ya empezó (según su hora programada)
         // - El estatus no es 'scheduled' (programado)
         
-        $ahora = now();
+        $nowUtc = now('UTC');
         
-        if ($match->status !== 'scheduled' || $ahora->isAfter($match->start_time)) {
+        // Convertimos start_time a Carbon si no lo es, asegurando UTC
+        $matchStartTime = \Illuminate\Support\Carbon::parse($match->start_time)->utc();
+        
+        if ($match->status !== 'scheduled' || $nowUtc->isAfter($matchStartTime)) {
             return response()->json([
                 'error' => '¡Bloqueado! El tiempo para enviar pronósticos ha terminado.',
-                'server_time' => $ahora->toDateTimeString(),
-                'match_time' => $match->start_time->toDateTimeString()
+                'server_time_utc' => $nowUtc->toDateTimeString(),
+                'match_time_utc' => $matchStartTime->toDateTimeString()
             ], 403);
         }
 
