@@ -19,15 +19,18 @@ class LeagueController extends Controller
         })->get();
     }
 
-    // 2. Traer solo las Jornadas que NO han empezado (Abiertas para apuestas)
-    public function getQuinielas($id)
+    // 2. Traer Jornadas (Por defecto solo futuras, con ?mode=all trae todas)
+    public function getQuinielas(Request $request, $id)
     {
         $now = now('UTC');
+        $query = Quiniela::where('league_id', $id);
 
-        $quinielas = Quiniela::where('league_id', $id)
-                             ->where('start_date', '>', $now) // Filtro estricto por fecha de inicio UTC
-                             ->orderBy('start_date', 'asc')
-                             ->get();
+        // Si NO pedimos 'all', aplicamos el filtro estricto (comportamiento original para públicas)
+        if ($request->query('mode') !== 'all') {
+            $query->where('start_date', '>', $now);
+        }
+
+        $quinielas = $query->orderBy('start_date', 'asc')->get();
                              
         return response()->json($quinielas);
     }
