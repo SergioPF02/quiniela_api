@@ -158,7 +158,7 @@ class ImportFootballData extends Command
                         'away_flag' => $matchData['awayTeam']['crest'],
                         'home_score' => $matchData['score']['fullTime']['home'],
                         'away_score' => $matchData['score']['fullTime']['away'],
-                        'start_time' => Carbon::parse($matchData['utcDate'])->setTimezone('America/Mexico_City'),
+                        'start_time' => Carbon::parse($matchData['utcDate']), // MANTENER EN UTC
                         'status' => $status,
                         'matchday' => $matchData['matchday'],
                         'round' => $matchData['stage']
