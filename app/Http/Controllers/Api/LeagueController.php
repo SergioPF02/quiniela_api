@@ -19,14 +19,18 @@ class LeagueController extends Controller
         })->get();
     }
 
-    // 2. Traer Jornadas (Por defecto solo futuras, con ?mode=all trae todas)
+    // 2. Traer Jornadas 
     public function getQuinielas(Request $request, $id)
     {
         $now = now('UTC');
         $query = Quiniela::where('league_id', $id);
 
-        // Si NO pedimos 'all', aplicamos el filtro estricto (comportamiento original para públicas)
-        if ($request->query('mode') !== 'all') {
+        // Si es 'mode=all' (Privadas), queremos ver las que NO han terminado (end_date > now)
+        // Esto incluye las futuras Y las que están a medias.
+        if ($request->query('mode') === 'all') {
+            $query->where('end_date', '>', $now);
+        } else {
+            // Si es normal (Públicas), queremos solo las que NO han empezado (start_date > now)
             $query->where('start_date', '>', $now);
         }
 
