@@ -41,10 +41,27 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/private-leagues/{id}/ranking', [PrivateLeagueController::class, 'ranking']); // Ranking Privado
     Route::get('/private-leagues/{id}/matches', [PrivateLeagueController::class, 'getLeagueMatches']); // Ver partidos de mi liga
 
-   // Ruta de prueba para ver mis datos
+    // Ruta de prueba para ver mis datos
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+});
+
+// --- AUTOMATIZACIÓN (Ruta Secreta para Cron-Job externo) ---
+Route::get('/system/auto-update-secret-777', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('system:auto-update');
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Sistema actualizado correctamente',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
 });
 
 Route::get('/ping', function () {
