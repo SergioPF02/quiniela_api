@@ -9,33 +9,25 @@ use Illuminate\Http\Request;
 
 class LeagueController extends Controller
 {
-    // 1. Traer todas las Ligas (Bombos)
+    // 1. Traer solo Ligas que tengan jornadas DISPONIBLES para apostar
     public function index()
     {
-        return League::all();
+        $now = now('UTC');
+        
+        return League::whereHas('quinielas', function($query) use ($now) {
+            $query->where('start_date', '>', $now);
+        })->get();
     }
 
-    // 2. Traer las Quinielas de una Liga específica (Solo las que no han empezado)
+    // 2. Traer solo las Jornadas que NO han empezado (Abiertas para apuestas)
     public function getQuinielas($id)
     {
-        $quinielas = Quiniela::where('league_id', $id)
-                             ->orderBy('start_date', 'asc')
-                             ->get()
-                             ->filter(function($quiniela) {
-                                 // Verificar si la jornada tiene algún partido que ya NO esté programado
-                                 $hasStarted = \DB::table('matches')
-                                     ->where('quiniela_id', $quiniela->id)
-                                     ->where('status', '!=', 'scheduled')
-                                     ->exists();
-                                     
-                                 // También verificamos que tenga partidos
-                                 $hasMatches = \DB::table('matches')
-                                     ->where('quiniela_id', $quiniela->id)
-                                     ->exists();
+        $now = now('UTC');
 
-                                 return $hasMatches && !$hasStarted;
-                             })
-                             ->values();
+        $quinielas = Quiniela::where('league_id', $id)
+                             ->where('start_date', '>', $now) // Filtro estricto por fecha de inicio UTC
+                             ->orderBy('start_date', 'asc')
+                             ->get();
                              
         return response()->json($quinielas);
     }
