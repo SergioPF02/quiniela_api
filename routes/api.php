@@ -46,3 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 });
+
+Route::get('/ping', function () {
+    return response()->json(['status' => 'ok']);
+});
